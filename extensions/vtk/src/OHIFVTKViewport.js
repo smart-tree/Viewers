@@ -49,27 +49,30 @@ class OHIFVTKViewport extends Component {
   state = {
     volumes: null,
     paintFilterLabelMapImageData: null,
-    paintFilterBackgroundImageData: null
+    paintFilterBackgroundImageData: null,
+    percentComplete: 0,
+    isLoaded: false,
   };
 
   static propTypes = {
     viewportData: PropTypes.shape({
-      studies: PropTypes.array,
+      studies: PropTypes.array.isRequired,
       displaySet: PropTypes.shape({
-        StudyInstanceUID: PropTypes.string,
-        displaySetInstanceUID: PropTypes.string,
+        StudyInstanceUID: PropTypes.string.isRequired,
+        displaySetInstanceUID: PropTypes.string.isRequired,
         sopClassUIDs: PropTypes.arrayOf(PropTypes.string),
         SOPInstanceUID: PropTypes.string,
         frameIndex: PropTypes.number,
       }),
     }),
-    viewportIndex: PropTypes.number,
+    viewportIndex: PropTypes.number.isRequired,
     children: PropTypes.node,
     onScroll: PropTypes.func,
+    servicesManager: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
-    onScroll: () => { },
+    onScroll: () => {},
   };
 
   static id = 'OHIFVTKViewport';
@@ -135,6 +138,8 @@ class OHIFVTKViewport extends Component {
     SOPInstanceUID,
     frameIndex
   ) => {
+    const { UINotificationService } = this.props.servicesManager.services;
+
     const stack = OHIFVTKViewport.getCornerstoneStack(
       studies,
       StudyInstanceUID,
@@ -156,9 +161,23 @@ class OHIFVTKViewport extends Component {
       const { activeLabelmapIndex } = brushStackState;
       const labelmap3D = brushStackState.labelmaps3D[activeLabelmapIndex];
 
-      this.segmentsDefaultProperties = labelmap3D.segmentsHidden.map(isHidden => {
-        return { visible: !isHidden };
-      });
+      if (
+        brushStackState.labelmaps3D.length > 1 &&
+        this.props.viewportIndex === 0
+      ) {
+        UINotificationService.show({
+          title: 'Overlapping Segmentation Found',
+          message:
+            'Overlapping segmentations cannot be displayed when in MPR mode',
+          type: 'info',
+        });
+      }
+
+      this.segmentsDefaultProperties = labelmap3D.segmentsHidden.map(
+        isHidden => {
+          return { visible: !isHidden };
+        }
+      );
 
       const vtkLabelmapID = `${firstImageId}_${activeLabelmapIndex}`;
 
@@ -291,52 +310,79 @@ class OHIFVTKViewport extends Component {
       seriesDescription: displaySet.seriesDescription,
     };
 
-    const {
-      imageDataObject,
-      labelmapDataObject,
-      labelmapColorLUT,
-    } = this.getViewportData(
-      studies,
-      StudyInstanceUID,
-      displaySetInstanceUID,
-      SOPInstanceUID,
-      frameIndex
-    );
+    try {
+      const {
+        imageDataObject,
+        labelmapDataObject,
+        labelmapColorLUT,
+      } = this.getViewportData(
+        studies,
+        StudyInstanceUID,
+        displaySetInstanceUID,
+        SOPInstanceUID,
+        frameIndex
+      );
 
-    this.imageDataObject = imageDataObject;
+      this.imageDataObject = imageDataObject;
 
-    /* TODO: Not currently used until we have drawing tools in vtkjs.
-    if (!labelmap) {
-      labelmap = createLabelMapImageData(data);
-    } */
+      /* TODO: Not currently used until we have drawing tools in vtkjs.
+      if (!labelmap) {
+        labelmap = createLabelMapImageData(data);
+      } */
 
-    const volumeActor = this.getOrCreateVolume(
-      imageDataObject,
-      displaySetInstanceUID
-    );
+      const volumeActor = this.getOrCreateVolume(
+        imageDataObject,
+        displaySetInstanceUID
+      );
 
-    this.setState(
-      {
-        percentComplete: 0,
-        dataDetails,
-      },
-      () => {
-        this.loadProgressively(imageDataObject);
+      this.setState(
+        {
+          percentComplete: 0,
+          dataDetails,
+        },
+        () => {
+          this.loadProgressively(imageDataObject);
 
-        // TODO: There must be a better way to do this.
-        // We do this so that if all the data is available the react-vtkjs-viewport
-        // Will render _something_ before the volumes are set and the volume
-        // Construction that happens in react-vtkjs-viewport locks up the CPU.
-        setTimeout(() => {
-          this.setState({
-            volumes: [volumeActor],
-            paintFilterLabelMapImageData: labelmapDataObject,
-            paintFilterBackgroundImageData: imageDataObject.vtkImageData,
-            labelmapColorLUT,
-          });
-        }, 200);
+          // TODO: There must be a better way to do this.
+          // We do this so that if all the data is available the react-vtkjs-viewport
+          // Will render _something_ before the volumes are set and the volume
+          // Construction that happens in react-vtkjs-viewport locks up the CPU.
+          setTimeout(() => {
+            this.setState({
+              volumes: [volumeActor],
+              paintFilterLabelMapImageData: labelmapDataObject,
+              paintFilterBackgroundImageData: imageDataObject.vtkImageData,
+              labelmapColorLUT,
+            });
+          }, 200);
+        }
+      );
+    } catch (error) {
+      const errorTitle = 'Failed to load 2D MPR';
+      console.error(errorTitle, error);
+      const { UINotificationService } = this.props.servicesManager.services;
+      if (this.props.viewportIndex === 0) {
+        const message = error.message.includes('buffer')
+          ? 'Dataset is too big to display in MPR'
+          : error.message;
+        console.error(errorTitle, error);
+        UINotificationService.show({
+          title: errorTitle,
+          message,
+          type: 'error',
+          autoClose: false,
+          action: {
+            label: 'Exit 2D MPR',
+            onClick: ({ close }) => {
+              // context: 'ACTIVE_VIEWPORT::VTK',
+              close();
+              this.props.commandsManager.runCommand('setCornerstoneLayout');
+            },
+          },
+        });
       }
-    );
+      this.setState({ isLoaded: true });
+    }
   }
 
   componentDidMount() {
@@ -349,7 +395,7 @@ class OHIFVTKViewport extends Component {
 
     if (
       displaySet.displaySetInstanceUID !==
-      prevDisplaySet.displaySetInstanceUID ||
+        prevDisplaySet.displaySetInstanceUID ||
       displaySet.SOPInstanceUID !== prevDisplaySet.SOPInstanceUID ||
       displaySet.frameIndex !== prevDisplaySet.frameIndex
     ) {
@@ -360,34 +406,54 @@ class OHIFVTKViewport extends Component {
   loadProgressively(imageDataObject) {
     loadImageData(imageDataObject);
 
-    const { isLoading, insertPixelDataPromises } = imageDataObject;
-
-    const NumberOfFrames = insertPixelDataPromises.length;
+    const { isLoading, imageIds } = imageDataObject;
 
     if (!isLoading) {
       this.setState({ isLoaded: true });
       return;
     }
 
-    insertPixelDataPromises.forEach(promise => {
-      promise.then(numberProcessed => {
-        const percentComplete = Math.floor(
-          (numberProcessed * 100) / NumberOfFrames
-        );
+    const NumberOfFrames = imageIds.length;
 
-        if (percentComplete !== this.state.percentComplete) {
-          this.setState({
-            percentComplete,
+    const onPixelDataInsertedCallback = numberProcessed => {
+      const percentComplete = Math.floor(
+        (numberProcessed * 100) / NumberOfFrames
+      );
+
+      if (percentComplete !== this.state.percentComplete) {
+        this.setState({
+          percentComplete,
+        });
+      }
+    };
+
+    const onPixelDataInsertedErrorCallback = error => {
+      const { UINotificationService } = this.props.servicesManager.services;
+
+      if (!this.hasError) {
+        if (this.props.viewportIndex === 0) {
+          // Only show the notification from one viewport 1 in MPR2D.
+          UINotificationService.show({
+            title: 'MPR Load Error',
+            message: error.message,
+            type: 'error',
+            autoClose: false,
           });
         }
-      });
-    });
 
-    Promise.all(insertPixelDataPromises).then(() => {
+        this.hasError = true;
+      }
+    };
+
+    const onAllPixelDataInsertedCallback = () => {
       this.setState({
         isLoaded: true,
       });
-    });
+    };
+
+    imageDataObject.onPixelDataInserted(onPixelDataInsertedCallback);
+    imageDataObject.onAllPixelDataInserted(onAllPixelDataInsertedCallback);
+    imageDataObject.onPixelDataInsertedError(onPixelDataInsertedErrorCallback);
   }
 
   render() {
@@ -435,7 +501,7 @@ class OHIFVTKViewport extends Component {
                 segmentsDefaultProperties: this.segmentsDefaultProperties,
                 onNewSegmentationRequested: () => {
                   this.setStateFromProps();
-                }
+                },
               }}
               onScroll={this.props.onScroll}
             />

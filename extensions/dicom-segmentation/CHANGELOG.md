@@ -3,6 +3,116 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.3](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.5.2...@ohif/extension-dicom-segmentation@0.5.3) (2021-02-25)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+## [0.5.2](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.5.1...@ohif/extension-dicom-segmentation@0.5.2) (2021-02-05)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+## [0.5.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.5.0...@ohif/extension-dicom-segmentation@0.5.1) (2021-01-21)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+# [0.5.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.4.7...@ohif/extension-dicom-segmentation@0.5.0) (2020-12-10)
+
+
+### Features
+
+* visualize overlapping segments in cornerstone ([#2185](https://github.com/OHIF/Viewers/issues/2185)) ([29fceac](https://github.com/OHIF/Viewers/commit/29fceacee97d51f1952a0f6b574c66596d32c201))
+
+
+
+
+
+## [0.4.7](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.4.6...@ohif/extension-dicom-segmentation@0.4.7) (2020-10-07)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+## [0.4.6](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.4.5...@ohif/extension-dicom-segmentation@0.4.6) (2020-09-17)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+## [0.4.5](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.4.4...@ohif/extension-dicom-segmentation@0.4.5) (2020-09-10)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+## [0.4.4](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.4.3...@ohif/extension-dicom-segmentation@0.4.4) (2020-09-10)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+## [0.4.3](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.4.2...@ohif/extension-dicom-segmentation@0.4.3) (2020-09-03)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+## [0.4.2](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.4.1...@ohif/extension-dicom-segmentation@0.4.2) (2020-09-02)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+## [0.4.1](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.4.0...@ohif/extension-dicom-segmentation@0.4.1) (2020-08-28)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
+# [0.4.0](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.3.4...@ohif/extension-dicom-segmentation@0.4.0) (2020-08-18)
+
+
+### Features
+
+* 🎸 Update react-vtkjs-viewport usage to use requestPool ([#1984](https://github.com/OHIF/Viewers/issues/1984)) ([bb5f30c](https://github.com/OHIF/Viewers/commit/bb5f30ce2a0192d2e021beaaadfff22fd38e17b9))
+
+
+
+
+
+## [0.3.4](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.3.3...@ohif/extension-dicom-segmentation@0.3.4) (2020-08-10)
+
+**Note:** Version bump only for package @ohif/extension-dicom-segmentation
+
+
+
+
+
 ## [0.3.3](https://github.com/OHIF/Viewers/compare/@ohif/extension-dicom-segmentation@0.3.2...@ohif/extension-dicom-segmentation@0.3.3) (2020-07-13)
 
 **Note:** Version bump only for package @ohif/extension-dicom-segmentation

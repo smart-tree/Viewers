@@ -12,7 +12,7 @@ import EmptyViewport from './EmptyViewport.js';
 
 const { loadAndCacheDerivedDisplaySets } = utils;
 
-const ViewportGrid = function(props) {
+const ViewportGrid = function (props) {
   const {
     activeViewportIndex,
     availablePlugins,
@@ -48,6 +48,7 @@ const ViewportGrid = function(props) {
               title: 'Error loading derived display set:',
               message: error.message,
               type: 'error',
+              error,
               autoClose: false,
             });
           });
@@ -80,6 +81,7 @@ const ViewportGrid = function(props) {
       // - When updating a panel, ensure that the currently enabled plugin
       // in the viewport is capable of rendering this display set. If not
       // then use the most capable available plugin
+
       const pluginName =
         !layout.plugin && displaySet && displaySet.plugin
           ? displaySet.plugin
